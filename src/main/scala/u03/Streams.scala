@@ -1,5 +1,7 @@
 package u03
 
+import scala.compiletime.ops.int.+
+
 object Streams extends App :
 
   import Lists.*
@@ -37,8 +39,20 @@ object Streams extends App :
     def iterate[A](init: => A)(next: A => A): Stream[A] =
       cons(init, iterate(next(init))(next))
 
-  end Stream
+    def drop[A](stream: Stream[A])(n: Int): Stream[A] = (stream, n) match
+      case (Cons(head, tail), n) if n>0 => drop(tail())(n-1)
+      case (Cons(head, tail), n) if n==0 => cons(head(), drop(tail())(n))
+      case _ => Empty()
 
+    def constant[A](x: A): Stream[A] =
+      return Stream.iterate(x)(x => x)
+
+    def fib(a: Int = 0, b: Int = 1): Stream[Int] = Stream.cons(a, fib(b, a+b))
+
+
+
+  end Stream
+/*
   // var simplifies chaining of functions a bit..
   var str = Stream.iterate(0)(_ + 1) // {0,1,2,3,..}
   str = Stream.map(str)(_ + 1) // {1,2,3,4,..}
@@ -48,3 +62,11 @@ object Streams extends App :
 
   val corec: Stream[Int] = Stream.cons(1, corec) // {1,1,1,..}
   println(Stream.toList(Stream.take(corec)(10))) // [1,1,..,1]
+
+
+  val s = Stream . take ( Stream . iterate (0) ( _ + 1) ) (10)
+  println(Stream . toList ( Stream . drop ( s ) (6) ))
+  println(Stream . toList ( Stream . take ( Stream.constant ("x") ) (10) ))
+*/
+  val fibs: Stream[Int] = Stream.fib(0,1)
+  println(Stream . toList ( Stream . take ( fibs ) (8) ))
